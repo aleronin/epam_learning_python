@@ -40,9 +40,12 @@ def format_with_fstring(data: Metrics):
     """
     # ... write the code...
     # note: you might have an temporary string here, that's fine!
-    main_str_fstring = f"CPU #1: {data.cpu_data[1]}%, Memory used: {data.memory_used}, Load avg: {data.load_avg:.02f}"
-    center_aligned_str = f"{main_str:*^64}"
-    return(center_aligned_str)
+    cpu = data.cpu_data[1]
+    mem = data.memory_used
+    load = data.load_avg
+
+    main_str = f"CPU #1: {cpu}%, Memory used: {mem}, Load avg: {load:.02f}"
+    return f"{main_str:*^64}"
 
 def format_with_format(data: Metrics):
     """Return a string that is formatted with `data` by using a "format" method
@@ -72,10 +75,10 @@ def format_with_format(data: Metrics):
     """
     # ... write the code...
     # temporary string is fine there too
-    text_with_params = "[{pid}] CPU #5: {cpu}%, Memory used: {mem}, Load avg: {load:.02f}"
-    main_str_format = text_with_params.format(pid=data.agent[-4:], cpu=data.cpu_data[5], mem=data.memory_used, load=data.load_avg)
-    right_aligned_str = '{:{sign}{align}{width}}'.format(main_str_format, sign='-', align='>', width='64')
-    return(right_aligned_str)
+
+    param = {"pid": data.agent[-4:], "cpu": data.cpu_data[7], "mem": data.memory_used, "load": data.load_avg}
+    main_str = "[{pid}] CPU #7: {cpu}%, Memory used: {mem}, Load avg: {load:.02f}".format(**param)
+    return '{:{sign}{align}{width}}'.format(main_str, sign='-', align='>', width='64')
 
 def format_with_percent(data: Metrics):
     """Return a string that is formatted with `data` by using a "%" formatting
@@ -104,14 +107,11 @@ def format_with_percent(data: Metrics):
     """
     # ... write the code...
     # temporary string is fine here too
-    text_with_params = {"address": agent_address, "cpu": cpu_data[7], "mem": memory_used, "load": load_avg}
-    main_str_percent = "[0x%(address)x] CPU #7: %(cpu)s%%, Memory used: %(mem)s, Load avg: %(load).02f" % text_with_params
-    right_aligned_str = '%*s' % (64, main_str_percent)
-    return(right_aligned_str)
 
-format_with_fstring(Metrics)
-format_with_format(Metrics)
-format_with_percent(Metrics)
+    param = {"addr": data.agent_address, "cpu": data.cpu_data[7], "mem": data.memory_used, "load": data.load_avg}
+    main_str = "[0x%(addr)x] CPU #7: %(cpu)s%%, Memory used: %(mem)s, Load avg: %(load).02f" % param
+    return '%*s' % (64, main_str)
+
 
 #### Tests ####
 
