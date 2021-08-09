@@ -51,10 +51,6 @@ class InfiniteGeneratorWrapper:
         self.max_elements = max_elements
         self.index = 0
 
-        self.l = []
-        for _ in range(self.max_elements):
-            self.l.append(next(self.g))
-
     def __iter__(self):
         return self
 
@@ -64,7 +60,7 @@ class InfiniteGeneratorWrapper:
         if self.index == self.max_elements:
             raise StopIteration
 
-        elem = self.l[self.index]
+        elem = next(self.g)
         elem = elem[::-1]
         elem_bytes = str.encode(elem)
         elem_hex = binascii.hexlify(elem_bytes)
