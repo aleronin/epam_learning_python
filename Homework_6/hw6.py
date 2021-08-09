@@ -91,8 +91,9 @@ class Homework:
     You can use low-level client or high level client and return list of instance classes if you've used high-level one
     and list of instance' dictionaries in case of low-level client
     """
-    ec2_res = boto3.resource("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
-    ec2_cli = boto3.client("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
+    def __init__(self):
+        self.ec2_res = boto3.resource("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
+        self.ec2_cli = boto3.client("ec2", region_name="eu-west-1", endpoint_url="http://localhost:5000")
 
     def find_by_tag(self, tag_name, tag_value):
         """This method should return instances that have `tag_name` == `tag_value`
@@ -101,58 +102,25 @@ class Homework:
             tag_name ([type]): [description]
             tag_value ([type]): [description]
         """
+        instance_list = []
         filters = [{'Name': 'tag:'+tag_name, 'Values': [tag_value]}]
         response = self.ec2_cli.describe_instances(Filters=filters)
-        inst_list = []
         for reservation in (response["Reservations"]):
-            for instance in  reservation["Instances"]:
-                inst_list.append(instance["InstanceId"])
-        # print(f"this is mine: {inst_list}")
-        return inst_list
-        # filters = [{'Name': "tag:tag_name", 'Values': ["tag_value"]}]
-
-
-        #     for tag in instance.tags:
-        #         if tag['Key'] == tag_name and tag['Value'] == tag_value:
-        #             l.append(instance.tags)
-        #             print(l)
-        # return l
-        # for instance in instances:
-        #     print(instance)
-        # filters = [{'Name': self.tag_name, 'Value':[self.tag_value]}]
-        # for instance in self.ec2_res.instances.all():
-        #     # print(instance.tags)
-        #     for tag in instance.tags:
-        #         if tag['Key'] == tag_name and tag['Value'] == tag_value:
-        #             print(instance)
-                    # print(tag['Value'])
-        # filters = [{'Name':tag_name, 'Values':[tag_value]}]
-        # for instance in self.ec2_res.describe_instances(Filters=filters):
-        #     print(instance.tags)
-
+            for instance in reservation["Instances"]:
+                instance_list.append(instance)
+        return instance_list
         pass
 
     def list_all_owners(self):
         """This method should list all owners of all instances from instance's tag "Owner"
         Caveat: Owner might be listed only once!
         """
-        list_owners = []
+        owners_list = []
         for instance in self.ec2_res.instances.all():
-            # print(instance.tags)
             for tag in instance.tags:
                 if tag['Key'] == 'Owner':
-                    list_owners.append(tag['Value'])
-        return (set(list_owners))
-
-        # l_owners = []
-        # filter = [{'Name': 'tag:Owner'}]
-        # for instance in self.ec2_res.instances.filter(Filters=filter):
-        #     print(instance.tags)
-        #
-        #     for tag in instance.tags:
-        #         l_owners.append(tag['Value'])
-        #         print(l_owners)
-
+                    owners_list.append(tag['Value'])
+        return (set(owners_list))
         pass
 
     def list_old_amis(self, threshold_days=30):
@@ -160,64 +128,28 @@ class Homework:
         see https://docs.python.org/3/library/datetime.html#datetime.date.fromisoformat
         """
         from datetime import timedelta, datetime
-
-        l = []
-        delta2 = datetime.today()
-
+        old_amis_list = []
         images = self.ec2_cli.describe_images()['Images']
         for ami in images:
             creation_date = ami['CreationDate']
             ami_id = ami['ImageId']
             delta1 = datetime.fromisoformat(creation_date[:-1])
-            # print(delta1)
-            # print(delta2)
-            if delta2 - delta1 <= timedelta(days=threshold_days):
-                l.append(ami_id)
-        return l
-
+            if datetime.today() - delta1 >= timedelta(days=threshold_days):
+                old_amis_list.append(ami_id)
+        return old_amis_list
         pass
 
     def find_jenkins(self):
         """This method should use boto3 and return instances that have tag "Project" == "Jenkins" """
-
-        instance_ids = []
-        response = self.ec2_cli.describe_instances(Filters=[{"Name": "tag:Project", "Values": ["Jenkins"]}])
+        instance_list = []
+        filters = [{"Name": "tag:Project", "Values": ["Jenkins"]}]
+        response = self.ec2_cli.describe_instances(Filters=filters)
         instances_full_details = response['Reservations']
         for instance_detail in instances_full_details:
             group_instances = instance_detail['Instances']
-
             for instance in group_instances:
-                instance_id = instance['InstanceId']
-                instance_ids.append(instance_id)
-        print(f"This is my list: {instance_ids}")
-        return instance_ids
-
-        # l = []
-        # filters = [{"Name": "tag:Project", "Values": ["Jenkins"]}]
-        # jenkins = self.ec2_cli.describe_instances(Filters=filters)
-        # for ins_inf in jenkins["Reservations"][0]["Instances"]:
-        #     print(ins_inf['InstanceId'])
-            # print(f"This is Reservations: {ins_inf=}")
-            # for ins_id in ins_inf["Instances"]:
-            #     print(f"This is Instances: {ins_id}")
-            #     for jenkins_inst in ins_id["InstanceId"]:
-            #         print(f"This is ID of jenkins: {jenkins_inst}")
-            #         l.append(jenkins_inst)
-
-        # jenkins_machines = self.ec2_res.instances.filter(Filters=[{"Name": "tag:Project", "Values": ["Jenkins"]}])
-        # for instance in jenkins_machines:
-        #     l.append(instance.instance_id)
-        #     print(instance.instance_id)
-        #     print(l)
-        # return l
-        # jenkins_inst = ins_id["InstanceId"]
-        # l.append(jenkins_inst)
-        # return l
-                # print(ins_id["InstanceId"])
-        # jenkins_inst = list(jenkins_inst)
-        # return ins_id["InstanceId"]
-        # jenkins_id = jenkins["Instances"]
-        # print(jenkins)
+                instance_list.append(instance)
+        return instance_list
         pass
 
 
